@@ -17,14 +17,27 @@ class SQLiteManager:
     def __init__(self, db_path: Path | str = ":memory:") -> None:
         """Initialize SQLite manager with path or memory database."""
         self.db_path = str(db_path)
+        self._shared_conn: Optional[sqlite3.Connection] = None
+        if self.db_path == ":memory:":
+            self._shared_conn = sqlite3.connect(":memory:")
+            self._shared_conn.row_factory = sqlite3.Row
+            self._shared_conn.execute("PRAGMA foreign_keys = ON;")
         self.create_tables()
 
     def get_connection(self) -> sqlite3.Connection:
         """Establish and return database connection with row factory and foreign keys enabled."""
+        if self._shared_conn is not None:
+            return self._shared_conn
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA foreign_keys = ON;")
         return conn
+
+    def close(self) -> None:
+        """Close shared connection if open."""
+        if self._shared_conn is not None:
+            self._shared_conn.close()
+            self._shared_conn = None
 
     # ------------------------------------------------------------------------
     # Task Medium 7: Создать несколько таблиц
