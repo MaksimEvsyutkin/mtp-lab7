@@ -34,6 +34,7 @@ class Department(Base):
         "Employee",
         back_populates="department",
         cascade="all, delete-orphan",
+        lazy="selectin",
     )
 
     def __repr__(self) -> str:
@@ -54,11 +55,12 @@ class Employee(Base):
     salary: Mapped[float] = mapped_column(Float, nullable=False)
     hire_date: Mapped[str] = mapped_column(String(20), nullable=False)
 
-    department: Mapped["Department"] = relationship("Department", back_populates="employees")
+    department: Mapped["Department"] = relationship("Department", back_populates="employees", lazy="selectin")
     projects: Mapped[List["Project"]] = relationship(
         "Project",
         secondary=employee_projects,
         back_populates="members",
+        lazy="selectin",
     )
 
     def __repr__(self) -> str:
@@ -81,6 +83,7 @@ class Project(Base):
         "Employee",
         secondary=employee_projects,
         back_populates="projects",
+        lazy="selectin",
     )
 
     def __repr__(self) -> str:
